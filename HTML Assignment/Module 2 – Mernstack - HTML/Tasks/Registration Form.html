@@ -4,6 +4,7 @@
 <title>Registration Form</title>
 
 <style>
+
 body{
 font-family: Arial;
 background:#f2f2f2;
@@ -21,7 +22,11 @@ box-shadow:0 0 10px gray;
 input, select{
 width:100%;
 padding:8px;
-margin:5px 0;
+margin:8px 0;
+}
+
+.gender{
+width:auto;
 }
 
 button{
@@ -30,6 +35,7 @@ color:white;
 border:none;
 padding:10px;
 width:100%;
+border-radius:5px;
 }
 
 </style>
@@ -44,28 +50,30 @@ width:100%;
 <form>
 
 <label>Full Name</label>
-<input type="text">
+<input type="text" name="name" required>
 
 <label>Email</label>
-<input type="email">
+<input type="email" name="email" required>
 
 <label>Password</label>
-<input type="password">
+<input type="password" name="password" required>
 
-<label>Gender</label>
-<select>
-<option>Male</option>
-<option>Female</option>
-</select>
+<label>Gender</label><br>
+
+<input class="gender" type="radio" name="gender" value="male" required> Male
+<input class="gender" type="radio" name="gender" value="female"> Female
+<input class="gender" type="radio" name="gender" value="other"> Other
+
+<br><br>
 
 <label>Course</label>
-<select>
+<select name="course">
 <option>Web Development</option>
 <option>Graphic Design</option>
 <option>Python</option>
 </select>
 
-<button>Register</button>
+<button type="submit">Register</button>
 
 </form>
 
