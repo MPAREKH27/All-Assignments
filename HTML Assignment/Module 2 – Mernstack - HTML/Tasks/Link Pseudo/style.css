@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 a:link{
 color:blue;
 }
@@ -12,4 +13,20 @@ color:red;
 
 a:active{
 color:green;
+=======
+a:link{
+color:blue;
+}
+
+a:visited{
+color:purple;
+}
+
+a:hover{
+color:red;
+}
+
+a:active{
+color:green;
+>>>>>>> 1bfa9fc1 (Clean history without node_modules)
 }
