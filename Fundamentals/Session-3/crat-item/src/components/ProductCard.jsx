@@ -1,18 +1,25 @@
-import React from 'react'
-import PropTypes from 'prop-types'   // ← this line causes 500 if package not installed
+import React from "react";
+import PropTypes from "prop-types";
 
-const productCard = ({ productName, price }) => {
+const ProductCard = ({ productName, price }) => {
   return (
-    <div>
+    <div style={{ 
+      border: "1px solid #ccc", 
+      padding: "16px", 
+      borderRadius: "8px", 
+      margin: "10px", 
+      width: "200px" 
+    }}>
       <h3>{productName}</h3>
-      <p>₹{price.toLocaleString()}</p>
+      <p>Price: ${price}</p>
     </div>
-  )
-}
+  );
+};
 
-productCard.propTypes = {
+// ✅ Prop type validation
+ProductCard.propTypes = {
   productName: PropTypes.string.isRequired,
   price: PropTypes.number.isRequired,
-}
+};
 
-export default productCard
+export default ProductCard;

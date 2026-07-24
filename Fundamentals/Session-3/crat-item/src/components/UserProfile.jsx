@@ -1,46 +1,30 @@
-import React from 'react'
-import PropTypes from 'prop-types'
+import React from "react";
 
 const UserProfile = ({ username, followers, profilePic }) => {
   return (
-    <div style={{
-      border: '1px solid #ddd',
-      borderRadius: '12px',
-      padding: '20px',
-      width: '220px',
-      textAlign: 'center',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+    <div style={{ 
+      border: "1px solid #ddd", 
+      borderRadius: "10px", 
+      padding: "20px", 
+      textAlign: "center", 
+      width: "250px", 
+      margin: "10px" 
     }}>
-      <img
-        src={profilePic}
-        alt="profile"
-        style={{
-          width: '80px',
-          height: '80px',
-          borderRadius: '50%',
-          objectFit: 'cover',
-          border: '2px solid #ddd'
-        }}
+      <img 
+        src={profilePic} 
+        alt={`${username}'s profile`} 
+        style={{ width: "80px", height: "80px", borderRadius: "50%" }} 
       />
-      <h3 style={{ margin: '10px 0 4px', color: '#333' }}>@{username}</h3>
-      <p style={{ color: 'gray', margin: 0, fontSize: '14px' }}>
-        {followers} followers
-      </p>
+      <h3>{username}</h3>
+      <p>{followers} Followers</p>
     </div>
-  )
-}
+  );
+};
 
-// Task 3 — Default Props
+// ✅ Default props
 UserProfile.defaultProps = {
   followers: 0,
-  profilePic: 'https://via.placeholder.com/80',
-}
+  profilePic: "https://via.placeholder.com/80", // fallback image
+};
 
-// PropTypes validation
-UserProfile.propTypes = {
-  username: PropTypes.string.isRequired,
-  followers: PropTypes.number,
-  profilePic: PropTypes.string,
-}
-
-export default UserProfile
+export default UserProfile;

@@ -1,82 +1,261 @@
-import React from "react";
-import { UserProvider } from "./contexts/Usrecontext";
-import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
-import { NotificationProvider } from "./contexts/NotificationContext";
-import Navbar from "./component/Navbar";
-import UserPanel from "./component/UserPanel";
-import DeepTree from "./component/DeepChild";
-import NotificationDemo from "./component/NotificationDemo";
+import React, { createContext, useContext, useState } from "react";
 
-function ThemedApp() {
-  const { theme } = useTheme();
-  const dark = theme === "dark";
 
-  const section = {
-    padding: "16px 20px",
-    borderRadius: "10px",
-    marginBottom: "16px",
-    background: dark ? "#16213e" : "#ffffff",
-    border: `1px solid ${dark ? "#2a3050" : "#e5e7eb"}`,
-  };
+ 
+const UserContext = createContext({
+  username: "guest_user",
+  loggedIn: false,
+});
 
-  const sectionLabel = {
-    fontSize: "10px",
-    fontWeight: 600,
-    letterSpacing: ".07em",
-    textTransform: "uppercase",
-    color: dark ? "#6b7280" : "#9ca3af",
-    marginBottom: "10px",
-  };
+ 
+/* 2. Navbar —          */
 
+function Navbar() {
+  const { username, loggedIn } = useContext(UserContext);
+
+  return (
+    <nav style={styles.navbar}>
+      <span style={styles.logo}>MyApp</span>
+      <span style={styles.userInfo}>
+        {loggedIn ? `👋 ${username}` : "Not logged in"}
+      </span>
+    </nav>
+  );
+}
+
+/* ================================================================== */
+/* 3. ThemeContext + toggle button — light/dark theme via Context API  */
+/* ================================================================== */
+const ThemeContext = createContext({
+  theme: "light",
+  toggleTheme: () => {},
+});
+
+function ThemeToggleButton() {
+  const { theme, toggleTheme } = useContext(ThemeContext);
+  return (
+    <button style={styles.toggleBtn} onClick={toggleTheme}>
+      Switch to {theme === "light" ? "dark" : "light"} mode
+    </button>
+  );
+}
+
+/* ================================================================== */
+/* 4. Prop-drilling refactor                                           */
+/* ------------------------------------------------------------------ */
+/*  BEFORE (theme passed down through every level as a prop):
+
+      function Page({ theme }) {
+        return <Section theme={theme} />;
+      }
+      function Section({ theme }) {
+        return <Card theme={theme} />;
+      }
+      function Card({ theme }) {
+        return <p style={{ color: theme === "dark" ? "#fff" : "#000" }}>
+                 Themed text
+               </p>;
+      }
+
+    AFTER (only the deepest child touches useContext — no theme prop
+    anywhere in between):
+*/
+function Page() {
+  return <Section />;
+}
+
+function Section() {
+  return <Card />;
+}
+
+function Card() {
+  const { theme } = useContext(ThemeContext); // <- only place theme is read
   return (
     <div
       style={{
-        minHeight: "100vh",
-        fontFamily: "'Inter', sans-serif",
-        fontSize: "14px",
-        background: dark ? "#1a1a2e" : "#f5f6fa",
-        color: dark ? "#e8eaf0" : "#1a1a2e",
-        transition: "background 0.2s",
+        ...styles.card,
+        background: theme === "dark" ? "#2a2a35" : "#fff",
+        color: theme === "dark" ? "#f0f0f0" : "#1a1a1a",
       }}
     >
-      <Navbar />
-      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "24px 20px" }}>
-        <div style={section}>
-          <div style={sectionLabel}>Task 1 & 2 — UserContext + Navbar</div>
-          <UserPanel />
-        </div>
-        <div style={section}>
-          <div style={sectionLabel}>Task 3 — ThemeContext (toggle top-right)</div>
-          <p style={{ fontSize: "13px", color: dark ? "#9ca3af" : "#6b7280" }}>
-            Current theme: <strong>{theme}</strong>. The entire page background updates via{" "}
-            <code>ThemeContext</code>. Navbar calls <code>toggleTheme()</code> from{" "}
-            <code>useTheme()</code> — no prop needed.
-          </p>
-        </div>
-        <div style={section}>
-          <div style={sectionLabel}>Task 4 — Deep child (no prop drilling)</div>
-          <p style={{ fontSize: "12px", color: dark ? "#9ca3af" : "#6b7280", marginBottom: "10px" }}>
-            Tree: App → ThemedLayout → ThemedPage → ThemedCard → <strong>DeepChild</strong>
-          </p>
-          <DeepTree />
-        </div>
-        <div style={section}>
-          <div style={sectionLabel}>Task 5 — NotificationContext (unread counter)</div>
-          <NotificationDemo />
-        </div>
-      </div>
+      <p style={{ margin: 0 }}>
+        I'm the deepest child (Card). No <code>theme</code> prop was
+        passed to <code>Page</code> or <code>Section</code> — I pulled it
+        straight from context.
+      </p>
     </div>
   );
 }
 
-export default function App() {
+/* ================================================================== */
+/* 5. NotificationContext — unread-count demo (WhatsApp-style badge)   */
+/* ------------------------------------------------------------------ */
+/*  AI-generated starting snippet (the kind ChatGPT/Copilot would give
+    you), then adapted to fit this demo:
+
+      const NotificationContext = createContext();
+
+      export function NotificationProvider({ children }) {
+        const [count, setCount] = useState(0);
+        const addNotification = () => setCount((c) => c + 1);
+        const clearNotifications = () => setCount(0);
+        return (
+          <NotificationContext.Provider
+            value={{ count, addNotification, clearNotifications }}
+          >
+            {children}
+          </NotificationContext.Provider>
+        );
+      }
+
+      export const useNotifications = () => useContext(NotificationContext);
+*/
+const NotificationContext = createContext();
+
+function NotificationProvider({ children }) {
+  const [count, setCount] = useState(3); // pretend 3 unread on load
+
+  const addNotification = () => setCount((c) => c + 1);
+  const clearNotifications = () => setCount(0);
+
   return (
-    <UserProvider>
-      <ThemeProvider>
-        <NotificationProvider>
-          <ThemedApp />
-        </NotificationProvider>
-      </ThemeProvider>
-    </UserProvider>
+    <NotificationContext.Provider
+      value={{ count, addNotification, clearNotifications }}
+    >
+      {children}
+    </NotificationContext.Provider>
   );
 }
+
+function NotificationBell() {
+  const { count, addNotification, clearNotifications } =
+    useContext(NotificationContext);
+
+  return (
+    <div style={styles.bellRow}>
+      <div style={styles.bellWrap}>
+        <span style={{ fontSize: "22px" }}>🔔</span>
+        {count > 0 && <span style={styles.badge}>{count}</span>}
+      </div>
+      <button style={styles.smallBtn} onClick={addNotification}>
+        New message
+      </button>
+      <button style={styles.smallBtn} onClick={clearNotifications}>
+        Mark all read
+      </button>
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* App — wires everything together                                     */
+/* ================================================================== */
+export default function App() {
+  const [theme, setTheme] = useState("light");
+  const toggleTheme = () =>
+    setTheme((t) => (t === "light" ? "dark" : "light"));
+
+  const currentUser = { username: "sara_codes", loggedIn: true };
+
+  return (
+    <UserContext.Provider value={currentUser}>
+      <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        <NotificationProvider>
+          <div
+            style={{
+              ...styles.page,
+              background: theme === "dark" ? "#1a1a22" : "#f7f7fb",
+              color: theme === "dark" ? "#f0f0f0" : "#1a1a1a",
+            }}
+          >
+            <Navbar />
+
+            <section style={styles.section}>
+              <h3 style={styles.heading}>3. Theme toggle (Context API)</h3>
+              <ThemeToggleButton />
+              <p style={styles.hint}>Current theme: {theme}</p>
+            </section>
+
+            <section style={styles.section}>
+              <h3 style={styles.heading}>
+                4. Prop-drilling refactor (Page → Section → Card)
+              </h3>
+              <Page />
+            </section>
+
+            <section style={styles.section}>
+              <h3 style={styles.heading}>
+                5. Notification count context (WhatsApp-style)
+              </h3>
+              <NotificationBell />
+            </section>
+          </div>
+        </NotificationProvider>
+      </ThemeContext.Provider>
+    </UserContext.Provider>
+  );
+}
+
+/* ================================================================== */
+/* Styles                                                               */
+/* ================================================================== */
+const styles = {
+  page: {
+    fontFamily: "system-ui, sans-serif",
+    minHeight: "100vh",
+    padding: "0 0 32px",
+    transition: "background 0.2s ease, color 0.2s ease",
+  },
+  navbar: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "14px 24px",
+    background: "#2563eb",
+    color: "#fff",
+  },
+  logo: { fontWeight: 700, fontSize: "18px" },
+  userInfo: { fontSize: "14px" },
+  section: {
+    padding: "20px 24px",
+    borderBottom: "1px solid rgba(128,128,128,0.2)",
+  },
+  heading: { margin: "0 0 12px", fontSize: "15px" },
+  hint: { fontSize: "13px", opacity: 0.7, marginTop: "8px" },
+  toggleBtn: {
+    padding: "8px 14px",
+    borderRadius: "8px",
+    border: "1px solid #2563eb",
+    background: "#2563eb",
+    color: "#fff",
+    cursor: "pointer",
+    fontSize: "14px",
+  },
+  card: {
+    padding: "16px",
+    borderRadius: "10px",
+    border: "1px solid rgba(128,128,128,0.2)",
+  },
+  bellRow: { display: "flex", alignItems: "center", gap: "12px" },
+  bellWrap: { position: "relative" },
+  badge: {
+    position: "absolute",
+    top: "-6px",
+    right: "-10px",
+    background: "#e11d48",
+    color: "#fff",
+    borderRadius: "999px",
+    fontSize: "11px",
+    padding: "1px 6px",
+    fontWeight: 700,
+  },
+  smallBtn: {
+    padding: "6px 10px",
+    borderRadius: "6px",
+    border: "1px solid rgba(128,128,128,0.4)",
+    background: "transparent",
+    color: "inherit",
+    cursor: "pointer",
+    fontSize: "13px",
+  },
+};
